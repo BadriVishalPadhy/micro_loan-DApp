@@ -7,12 +7,12 @@ import { ProtectedRoute } from "@/components/protected-route"
 
 export default function BorrowerPage() {
   return (
-    <ProtectedRoute requiredRole="borrower">
+
       <main className="min-h-screen bg-background">
         <Navigation />
         <BorrowerDashboard />
         <Footer />
       </main>
-    </ProtectedRoute>
+
   )
 }
