@@ -1,128 +1,218 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, TrendingUp, Clock, CheckCircle2, AlertCircle, AlertCircleIcon } from "lucide-react"
-import { RequestLoanModal } from "./request-loan-modal"
+import { DollarSign, TrendingDown, Clock, CheckCircle, RefreshCw } from "lucide-react"
 import { LoanCard } from "./loan-card"
 import { useBlockchain } from "@/contexts/BlockchainContext"
-import { ethers } from 'ethers'
+import { withdrawLoan, repayLoan, formatLoanForUI } from "@/utils/blockchain"
+import { ethers } from "ethers"
 
 export function BorrowerDashboard() {
-  const [showRequestModal, setShowRequestModal] = useState(false)
-  const { isConnected, connectWallet, loans, loading, account } = useBlockchain()
-  const [stats, setStats] = useState([
+  const { isConnected, account, connectWallet, loans, loading, refreshLoans } = useBlockchain()
+  const [processing, setProcessing] = useState(false)
+
+  // Calculate statistics
+  const stats = {
+    totalBorrowed: loans.reduce((sum, loan) => {
+      if (loan.status === "Funded" || loan.status === "Withdrawn" || loan.status === "Repaid") {
+        return sum + loan.principal
+      }
+      return sum
+    }, 0),
+    activeLoans: loans.filter(
+      loan => loan.status === "Funded" || loan.status === "Withdrawn"
+    ).length,
+    pendingRequests: loans.filter(loan => loan.status === "Requested").length,
+    repaidLoans: loans.filter(loan => loan.status === "Repaid").length,
+  }
+
+  // Handle withdraw
+  const handleWithdraw = async (loanId: number) => {
+    if (!window.ethereum || !account) {
+      alert("Please connect your wallet first")
+      return
+    }
+
+    try {
+      setProcessing(true)
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      
+      console.log(`Withdrawing loan ${loanId}`)
+      
+      const tx = await withdrawLoan(signer, loanId)
+      console.log("Transaction sent:", tx.hash)
+      
+      // Wait for confirmation
+      await tx.wait()
+      console.log("Transaction confirmed!")
+      
+      // Refresh loans
+      await refreshLoans()
+      
+      alert("Loan withdrawn successfully! The funds have been transferred to your wallet.")
+    } catch (error: any) {
+      console.error("Error withdrawing loan:", error)
+      let errorMessage = "Error withdrawing loan"
+      
+      if (error.message?.includes("user rejected")) {
+        errorMessage = "Transaction was rejected"
+      } else if (error.message?.includes("Only borrower can withdraw")) {
+        errorMessage = "Only the borrower can withdraw this loan"
+      } else if (error.message?.includes("Loan is not funded")) {
+        errorMessage = "Loan must be funded before withdrawal"
+      } else if (error.message?.includes("Loan has expired")) {
+        errorMessage = "Loan has expired and cannot be withdrawn"
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Handle repay
+  const handleRepay = async (loanId: number, amount: number) => {
+    if (!window.ethereum || !account) {
+      alert("Please connect your wallet first")
+      return
+    }
+
+    try {
+      setProcessing(true)
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      
+      // Check balance
+      const balance = await provider.getBalance(account)
+      const amountWei = ethers.parseEther(amount.toString())
+      
+      if (balance < amountWei) {
+        alert(`Insufficient balance. You need ${amount.toFixed(4)} ETH but only have ${ethers.formatEther(balance)} ETH`)
+        setProcessing(false)
+        return
+      }
+      
+      console.log(`Repaying loan ${loanId} with ${amount} ETH`)
+      
+      const tx = await repayLoan(signer, loanId, amount.toString())
+      console.log("Transaction sent:", tx.hash)
+      
+      // Wait for confirmation
+      await tx.wait()
+      console.log("Transaction confirmed!")
+      
+      // Refresh loans
+      await refreshLoans()
+      
+      alert("Loan repaid successfully! The lender has received the repayment.")
+    } catch (error: any) {
+      console.error("Error repaying loan:", error)
+      let errorMessage = "Error repaying loan"
+      
+      if (error.message?.includes("user rejected")) {
+        errorMessage = "Transaction was rejected"
+      } else if (error.message?.includes("Only borrower can repay")) {
+        errorMessage = "Only the borrower can repay this loan"
+      } else if (error.message?.includes("Loan is not withdrawn")) {
+        errorMessage = "Loan must be withdrawn before repayment"
+      } else if (error.message?.includes("Loan is past due date")) {
+        errorMessage = "Loan is past due date and cannot be repaid normally"
+      } else if (error.message?.includes("Must send exact repayment amount")) {
+        errorMessage = "You must send the exact repayment amount"
+      } else if (error.message?.includes("insufficient funds")) {
+        errorMessage = "Insufficient funds for repayment + gas fees"
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const statsDisplay = [
     {
       label: "Total Borrowed",
-      value: "$0",
-      icon: TrendingUp,
+      value: `${stats.totalBorrowed.toFixed(4)} ETH`,
+      icon: DollarSign,
       color: "text-primary",
     },
     {
       label: "Active Loans",
-      value: "0",
-      icon: Clock,
+      value: stats.activeLoans.toString(),
+      icon: TrendingDown,
       color: "text-warning",
     },
     {
-      label: "Repaid",
-      value: "$0",
-      icon: CheckCircle2,
-      color: "text-success",
-    },
-    {
-      label: "Repayment Rate",
-      value: "0%",
-      icon: AlertCircle,
+      label: "Pending Requests",
+      value: stats.pendingRequests.toString(),
+      icon: Clock,
       color: "text-muted",
     },
-  ])
+    {
+      label: "Repaid Loans",
+      value: stats.repaidLoans.toString(),
+      icon: CheckCircle,
+      color: "text-success",
+    },
+  ]
 
-  useEffect(() => {
-    if (isConnected && loans.length > 0) {
-      const totalBorrowed = loans.reduce((sum, loan) => sum + loan.principal, 0);
-      const activeLoans = loans.filter(loan => 
-        loan.status === 'Requested' || loan.status === 'Funded' || loan.status === 'Withdrawn'
-      ).length;
-      const repaidLoans = loans.filter(loan => loan.status === 'Repaid');
-      const totalRepaid = repaidLoans.reduce((sum, loan) => sum + loan.principal, 0);
-      const repaymentRate = loans.length > 0 
-        ? Math.round((repaidLoans.length / loans.length) * 100) 
-        : 0;
-
-      setStats([
-        {
-          ...stats[0],
-          value: `$${totalBorrowed.toLocaleString()}`,
-        },
-        {
-          ...stats[1],
-          value: activeLoans.toString(),
-        },
-        {
-          ...stats[2],
-          value: `$${totalRepaid.toLocaleString()}`,
-        },
-        {
-          ...stats[3],
-          value: `${repaymentRate}%`,
-          color: repaymentRate === 100 ? 'text-success' : 
-                 repaymentRate >= 50 ? 'text-warning' : 'text-error'
-        },
-      ]);
-    }
-  }, [loans, isConnected])
-
-  const handleConnectWallet = async () => {
-    try {
-      await connectWallet();
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-      // You might want to show an error toast here
-    }
-  };
+  // Categorize loans
+  const requestedLoans = loans.filter(loan => loan.status === "Requested")
+  const fundedLoans = loans.filter(loan => loan.status === "Funded")
+  const withdrawnLoans = loans.filter(loan => loan.status === "Withdrawn")
+  const completedLoans = loans.filter(loan => loan.status === "Repaid" || loan.status === "Defaulted")
 
   if (!isConnected) {
     return (
       <section className="py-12 md:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-card p-8 rounded-lg shadow-sm border">
-            <h1 className="text-3xl font-bold text-foreground mb-4">Connect Your Wallet</h1>
-            <p className="text-muted-foreground mb-8">Connect your MetaMask wallet to view and manage your loans</p>
-            <button 
-              onClick={handleConnectWallet}
-              className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-lg"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-foreground mb-4">Borrower Dashboard</h1>
+            <p className="text-muted mb-8">Connect your wallet to view and manage your loans</p>
+            <button
+              onClick={connectWallet}
+              className="btn btn-primary"
+              disabled={loading}
             >
-              <img src="/metamask-logo.svg" alt="MetaMask" className="w-6 h-6" />
-              Connect MetaMask
+              {loading ? "Connecting..." : "Connect Wallet"}
             </button>
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   return (
     <section className="py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-12 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">Borrower Dashboard</h1>
-            <p className="text-muted">
-              Connected as: {`${account?.substring(0, 6)}...${account?.substring(38)}`}
-            </p>
+            <p className="text-muted">Manage your loan requests and repayments</p>
+            {account && (
+              <p className="text-sm text-muted mt-2">
+                Connected: {account.substring(0, 6)}...{account.substring(38)}
+              </p>
+            )}
           </div>
-          <button 
-            onClick={handleConnectWallet}
-            className="btn-secondary inline-flex items-center gap-2 text-sm"
+          <button
+            onClick={refreshLoans}
+            disabled={loading || processing}
+            className="btn btn-secondary flex items-center gap-2"
           >
-            <img src="/metamask-logo.svg" alt="MetaMask" className="w-4 h-4" />
-            Switch Account
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </button>
         </div>
 
         {/* Stats Grid */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
-          {stats.map((stat, index) => {
+          {statsDisplay.map((stat, index) => {
             const Icon = stat.icon
             return (
               <div key={index} className="card">
@@ -138,57 +228,76 @@ export function BorrowerDashboard() {
           })}
         </div>
 
-        {/* Request Loan Button */}
-        <div className="mb-12">
-          <button 
-            onClick={() => setShowRequestModal(true)} 
-            className="btn-primary inline-flex items-center gap-2"
-            disabled={loading}
-          >
-            <Plus size={20} />
-            {loading ? 'Loading...' : 'Request New Loan'}
-          </button>
-        </div>
-
-        {/* Loans List */}
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-foreground">Your Loans</h2>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              disabled={loading}
-            >
-              Refresh
-            </button>
-          </div>
-          
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : loans.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg">
-              <p className="text-muted-foreground">You don't have any loans yet.</p>
-              <button 
-                onClick={() => setShowRequestModal(true)}
-                className="mt-4 btn-primary inline-flex items-center gap-2"
-              >
-                <Plus size={16} />
-                Request Your First Loan
-              </button>
-            </div>
-          ) : (
+        {/* Loans Requiring Action */}
+        {(fundedLoans.length > 0 || withdrawnLoans.length > 0) && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              Action Required ({fundedLoans.length + withdrawnLoans.length})
+            </h2>
             <div className="space-y-4">
-              {loans.map((loan) => (
+              {fundedLoans.map((loan) => (
+                <LoanCard 
+                  key={loan.id} 
+                  loan={loan} 
+                  userType="borrower"
+                  onWithdraw={handleWithdraw}
+                />
+              ))}
+              {withdrawnLoans.map((loan) => (
+                <LoanCard 
+                  key={loan.id} 
+                  loan={loan} 
+                  userType="borrower"
+                  onRepay={handleRepay}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pending Requests */}
+        {requestedLoans.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              Pending Requests ({requestedLoans.length})
+            </h2>
+            <div className="space-y-4">
+              {requestedLoans.map((loan) => (
                 <LoanCard key={loan.id} loan={loan} userType="borrower" />
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Request Loan Modal */}
-        {showRequestModal && <RequestLoanModal onClose={() => setShowRequestModal(false)} />}
+        {/* Completed Loans */}
+        {completedLoans.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              Completed Loans ({completedLoans.length})
+            </h2>
+            <div className="space-y-4">
+              {completedLoans.map((loan) => (
+                <LoanCard key={loan.id} loan={loan} userType="borrower" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {loans.length === 0 && !loading && (
+          <div className="card text-center py-12">
+            <p className="text-muted mb-4">You don't have any loans yet.</p>
+            <p className="text-sm text-muted">Request a loan to get started!</p>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && loans.length === 0 && (
+          <div className="text-center py-12">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted">Loading your loans...</p>
+          </div>
+        )}
       </div>
     </section>
   )

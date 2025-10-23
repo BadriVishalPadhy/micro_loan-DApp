@@ -19,10 +19,12 @@ interface LoanCardProps {
   }
   userType: "borrower" | "lender"
   onFund?: (loanId: number, amount: number) => Promise<void>
+  onWithdraw?: (loanId: number) => Promise<void>
+  onRepay?: (loanId: number, amount: number) => Promise<void>
 }
 
-export function LoanCard({ loan, userType, onFund }: LoanCardProps) {
-  const [fundingLoan, setFundingLoan] = useState(false)
+export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCardProps) {
+  const [processing, setProcessing] = useState(false)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -46,21 +48,68 @@ export function LoanCard({ loan, userType, onFund }: LoanCardProps) {
     
     const confirmed = confirm(
       `Are you sure you want to fund this loan?\n\n` +
-      `Amount: ${loan.principal} ETH\n` +
+      `Amount: ${loan.principal.toFixed(4)} ETH\n` +
       `Interest Rate: ${loan.interestRate}%\n` +
-      `Expected Return: ${loan.repayment} ETH\n` +
+      `Expected Return: ${loan.repayment.toFixed(4)} ETH\n` +
       `Due Date: ${loan.dueDate}`
     )
     
     if (!confirmed) return
     
     try {
-      setFundingLoan(true)
+      setProcessing(true)
       await onFund(loan.id, loan.principal)
     } catch (error) {
       console.error("Error funding loan:", error)
     } finally {
-      setFundingLoan(false)
+      setProcessing(false)
+    }
+  }
+
+  const handleWithdraw = async () => {
+    if (!onWithdraw) return
+    
+    const confirmed = confirm(
+      `Are you sure you want to withdraw this loan?\n\n` +
+      `Amount to receive: ${loan.principal.toFixed(4)} ETH\n` +
+      `Must repay: ${loan.repayment.toFixed(4)} ETH\n` +
+      `By: ${loan.dueDate}\n\n` +
+      `Remember: You must repay the full amount by the due date!`
+    )
+    
+    if (!confirmed) return
+    
+    try {
+      setProcessing(true)
+      await onWithdraw(loan.id)
+    } catch (error) {
+      console.error("Error withdrawing loan:", error)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const handleRepay = async () => {
+    if (!onRepay) return
+    
+    const confirmed = confirm(
+      `Are you sure you want to repay this loan?\n\n` +
+      `Repayment Amount: ${loan.repayment.toFixed(4)} ETH\n` +
+      `Principal: ${loan.principal.toFixed(4)} ETH\n` +
+      `Interest: ${(loan.repayment - loan.principal).toFixed(4)} ETH\n` +
+      `Due Date: ${loan.dueDate}\n\n` +
+      `Make sure you have enough ETH in your wallet!`
+    )
+    
+    if (!confirmed) return
+    
+    try {
+      setProcessing(true)
+      await onRepay(loan.id, loan.repayment)
+    } catch (error) {
+      console.error("Error repaying loan:", error)
+    } finally {
+      setProcessing(false)
     }
   }
 
@@ -163,15 +212,16 @@ export function LoanCard({ loan, userType, onFund }: LoanCardProps) {
           )}
         </div>
 
-        {/* Action Button */}
+        {/* Action Buttons */}
         <div className="flex flex-col gap-2">
+          {/* Lender - Fund Loan Button */}
           {userType === "lender" && loan.status === "Requested" && onFund && (
             <button
               onClick={handleFund}
-              disabled={fundingLoan}
+              disabled={processing}
               className="btn btn-primary flex items-center justify-center gap-2 min-w-[140px]"
             >
-              {fundingLoan ? (
+              {processing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Funding...
@@ -185,17 +235,45 @@ export function LoanCard({ loan, userType, onFund }: LoanCardProps) {
             </button>
           )}
 
-          {loan.status === "Funded" && userType === "borrower" && (
-            <button className="btn btn-primary flex items-center justify-center gap-2 min-w-[140px]">
-              Withdraw
-              <ArrowRight className="w-4 h-4" />
+          {/* Borrower - Withdraw Button */}
+          {loan.status === "Funded" && userType === "borrower" && onWithdraw && (
+            <button 
+              onClick={handleWithdraw}
+              disabled={processing}
+              className="btn btn-primary flex items-center justify-center gap-2 min-w-[140px]"
+            >
+              {processing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Withdraw
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           )}
 
-          {loan.status === "Withdrawn" && userType === "borrower" && (
-            <button className="btn btn-success flex items-center justify-center gap-2 min-w-[140px]">
-              Repay Loan
-              <ArrowRight className="w-4 h-4" />
+          {/* Borrower - Repay Loan Button */}
+          {loan.status === "Withdrawn" && userType === "borrower" && onRepay && (
+            <button 
+              onClick={handleRepay}
+              disabled={processing}
+              className="btn btn-success flex items-center justify-center gap-2 min-w-[140px]"
+            >
+              {processing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Repaying...
+                </>
+              ) : (
+                <>
+                  Repay Loan
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           )}
 
@@ -205,6 +283,16 @@ export function LoanCard({ loan, userType, onFund }: LoanCardProps) {
               <p className="text-xs text-muted">Expected Return</p>
               <p className="font-bold text-success">
                 +{(loan.repayment - loan.principal).toFixed(4)} ETH
+              </p>
+            </div>
+          )}
+
+          {/* Amount to Repay Info for Borrowers */}
+          {userType === "borrower" && loan.status === "Withdrawn" && (
+            <div className="text-center">
+              <p className="text-xs text-muted">Amount to Repay</p>
+              <p className="font-bold text-warning">
+                {loan.repayment.toFixed(4)} ETH
               </p>
             </div>
           )}
