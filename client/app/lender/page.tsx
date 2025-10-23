@@ -9,7 +9,6 @@ export default function LenderPage() {
   return (
     <ProtectedRoute requiredRole="lender">
       <main className="min-h-screen bg-background">
-        <Navigation />
         <LenderDashboard />
         <Footer />
       </main>
