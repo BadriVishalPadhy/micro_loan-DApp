@@ -7,11 +7,9 @@ import { ProtectedRoute } from "@/components/protected-route"
 
 export default function LenderPage() {
   return (
-    <ProtectedRoute requiredRole="lender">
-      <main className="min-h-screen bg-background">
-        <LenderDashboard />
-        <Footer />
-      </main>
-    </ProtectedRoute>
+    <main className="min-h-screen bg-background">
+      <LenderDashboard />
+      <Footer />
+    </main>
   )
 }

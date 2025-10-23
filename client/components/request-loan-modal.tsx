@@ -112,7 +112,6 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
                 onChange={(e) => setFormData({ ...formData, principal: e.target.value })}
                 className="w-full pl-4 pr-20 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="5000"
-                min="1"
                 step="0.01"
                 required
                 disabled={isSubmitting}
