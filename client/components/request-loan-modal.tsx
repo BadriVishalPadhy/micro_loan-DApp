@@ -102,8 +102,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
           
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Loan Amount (USDC)
-              <span className=" text-xs ml-2">1 USDC = $1.00</span>
+              Loan Amount
             </label>
             <div className="relative">
               <input
@@ -117,7 +116,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
                 disabled={isSubmitting}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <span className="">USDC</span>
+                <span className="">ETH</span>
               </div>
             </div>
           </div>
@@ -193,16 +192,16 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="">Amount</span>
-                <span>${parseFloat(formData.principal || '0').toLocaleString()}</span>
+                <span>{parseFloat(formData.principal || '0').toLocaleString()}ETH</span>
               </div>
               <div className="flex justify-between">
                 <span className="">Interest ({formData.interestRate || '0'}%)</span>
-                <span>${(parseFloat(formData.principal || '0') * parseFloat(formData.interestRate || '0') / 100).toFixed(2)}</span>
+                <span>{(parseFloat(formData.principal || '0') * parseFloat(formData.interestRate || '0') / 100).toFixed(2)}ETH</span>
               </div>
               <div className="border-t border-border my-2"></div>
               <div className="flex justify-between font-medium">
                 <span>Total to repay</span>
-                <span>${(parseFloat(formData.principal || '0') * (1 + parseFloat(formData.interestRate || '0') / 100)).toFixed(2)}</span>
+                <span>{(parseFloat(formData.principal || '0') * (1 + parseFloat(formData.interestRate || '0') / 100)).toFixed(2)}ETH</span>
               </div>
             </div>
           </div>
