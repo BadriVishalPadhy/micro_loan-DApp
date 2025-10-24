@@ -52,7 +52,6 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
         formData.principal,
         formData.interestRate,
         formData.dueDate,
-        formData.purpose
       )
       
       // Refresh the loans list

@@ -1,12 +1,6 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { formatLoanForUI } from '@/utils/blockchain';
 import { BrowserProvider, ethers } from 'ethers';
-import { LoanDetails, formatLoanForUI, calculateRepayment } from '@/utils/blockchain';
-
-declare global {
-  interface Window {
-    ethereum: any;
-  }
-}
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
 type BlockchainContextType = {
   isConnected: boolean;
@@ -68,7 +62,7 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     checkConnection();
 
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', async (accounts: string[]) => {
+      window.ethereum.on('accountsChanged', async (accounts: unknown[]) => {
         if (accounts.length > 0) {
           const provider = new BrowserProvider(window.ethereum);
           const network = await provider.getNetwork();

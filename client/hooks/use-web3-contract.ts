@@ -17,7 +17,7 @@ export function useWeb3Contract() {
       abi: MICROLOAN_ABI,
       functionName: "requestLoan",
       args: [principal, BigInt(interestRate), BigInt(dueDate), purpose],
-    })
+    } as any)
   }
 
   const fundLoan = async (loanId: number, amount: bigint) => {
@@ -29,7 +29,7 @@ export function useWeb3Contract() {
       functionName: "fundLoan",
       args: [BigInt(loanId)],
       value: amount,
-    })
+    } as any)
   }
 
   const withdrawFunds = async (loanId: number) => {
@@ -40,7 +40,7 @@ export function useWeb3Contract() {
       abi: MICROLOAN_ABI,
       functionName: "withdrawFunds",
       args: [BigInt(loanId)],
-    })
+    } as any)
   }
 
   const repayLoan = async (loanId: number, amount: bigint) => {
@@ -52,7 +52,7 @@ export function useWeb3Contract() {
       functionName: "repayLoan",
       args: [BigInt(loanId)],
       value: amount,
-    })
+    } as any)
   }
 
   return {

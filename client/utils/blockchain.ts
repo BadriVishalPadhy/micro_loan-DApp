@@ -26,12 +26,6 @@ const LOAN_CONTRACT_ABI = [
 
 const LOAN_CONTRACT_ADDRESS = '0xcC7884d0BC84818dF3999c6742EA69cBD573bc40';
 
-declare global {
-  interface Window {
-    ethereum: any;
-  }
-}
-
 // Loan status enum matching Solidity
 export enum LoanStatus {
   Requested = 0,

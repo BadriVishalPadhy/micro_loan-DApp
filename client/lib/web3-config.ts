@@ -8,7 +8,7 @@ if (process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
   connectors.push(
     walletConnect({
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-    }),
+    }  as any)  as any,
   )
 }
 
