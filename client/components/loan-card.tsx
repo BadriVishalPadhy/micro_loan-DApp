@@ -124,7 +124,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
                 Loan #{loan.id}
               </h3>
               {loan.purpose && (
-                <p className="text-sm text-muted">{loan.purpose}</p>
+                <p className="text-sm ">{loan.purpose}</p>
               )}
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(loan.status)}`}>
@@ -135,7 +135,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
           {/* Loan Details Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <div className="flex items-center gap-2 text-muted text-sm mb-1">
+              <div className="flex items-center gap-2  text-sm mb-1">
                 <DollarSign className="w-4 h-4" />
                 <span>Principal</span>
               </div>
@@ -143,7 +143,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
             </div>
 
             <div>
-              <div className="flex items-center gap-2 text-muted text-sm mb-1">
+              <div className="flex items-center gap-2  text-sm mb-1">
                 <TrendingUp className="w-4 h-4" />
                 <span>Repayment</span>
               </div>
@@ -152,7 +152,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
 
             {loan.interestRate !== undefined && (
               <div>
-                <div className="flex items-center gap-2 text-muted text-sm mb-1">
+                <div className="flex items-center gap-2  text-sm mb-1">
                   <TrendingUp className="w-4 h-4" />
                   <span>Interest</span>
                 </div>
@@ -161,7 +161,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
             )}
 
             <div>
-              <div className="flex items-center gap-2 text-muted text-sm mb-1">
+              <div className="flex items-center gap-2  text-sm mb-1">
                 <Calendar className="w-4 h-4" />
                 <span>Due Date</span>
               </div>
@@ -172,16 +172,16 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
           {/* Borrower/Lender Info */}
           {userType === "lender" && loan.borrower && (
             <div className="flex items-center gap-2 text-sm">
-              <User className="w-4 h-4 text-muted" />
-              <span className="text-muted">Borrower:</span>
+              <User className="w-4 h-4 " />
+              <span className="">Borrower:</span>
               <span className="font-mono text-foreground">{loan.borrower}</span>
             </div>
           )}
 
           {userType === "borrower" && loan.lender && (
             <div className="flex items-center gap-2 text-sm">
-              <User className="w-4 h-4 text-muted" />
-              <span className="text-muted">Lender:</span>
+              <User className="w-4 h-4 " />
+              <span className="">Lender:</span>
               <span className="font-mono text-foreground">{loan.lender}</span>
             </div>
           )}
@@ -190,7 +190,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
           {loan.progress !== undefined && loan.progress > 0 && (
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted">Repayment Progress</span>
+                <span className="">Repayment Progress</span>
                 <span className="font-semibold text-foreground">{loan.progress}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -206,7 +206,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
           {loan.returns !== undefined && (
             <div className="flex items-center gap-2 text-sm">
               <TrendingUp className="w-4 h-4 text-success" />
-              <span className="text-muted">Returns Earned:</span>
+              <span className="">Returns Earned:</span>
               <span className="font-semibold text-success">{loan.returns.toFixed(4)} ETH</span>
             </div>
           )}
@@ -280,7 +280,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
           {/* Expected Return Info for Lenders */}
           {userType === "lender" && loan.status === "Requested" && (
             <div className="text-center">
-              <p className="text-xs text-muted">Expected Return</p>
+              <p className="text-xs ">Expected Return</p>
               <p className="font-bold text-success">
                 +{(loan.repayment - loan.principal).toFixed(4)} ETH
               </p>
@@ -290,7 +290,7 @@ export function LoanCard({ loan, userType, onFund, onWithdraw, onRepay }: LoanCa
           {/* Amount to Repay Info for Borrowers */}
           {userType === "borrower" && loan.status === "Withdrawn" && (
             <div className="text-center">
-              <p className="text-xs text-muted">Amount to Repay</p>
+              <p className="text-xs ">Amount to Repay</p>
               <p className="font-bold text-warning">
                 {loan.repayment.toFixed(4)} ETH
               </p>

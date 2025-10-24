@@ -6,6 +6,7 @@ import { LoanCard } from "./loan-card"
 import { useBlockchain } from "@/contexts/BlockchainContext"
 import { withdrawLoan, repayLoan, formatLoanForUI } from "@/utils/blockchain"
 import { ethers } from "ethers"
+import { RequestLoanModal } from "./request-loan-modal"
 
 export function BorrowerDashboard() {
   const { isConnected, account, connectWallet, loans, loading, refreshLoans } = useBlockchain()
@@ -151,7 +152,7 @@ export function BorrowerDashboard() {
       label: "Pending Requests",
       value: stats.pendingRequests.toString(),
       icon: Clock,
-      color: "text-muted",
+      color: "",
     },
     {
       label: "Repaid Loans",
@@ -173,7 +174,7 @@ export function BorrowerDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-foreground mb-4">Borrower Dashboard</h1>
-            <p className="text-muted mb-8">Connect your wallet to view and manage your loans</p>
+            <p className=" mb-8">Connect your wallet to view and manage your loans</p>
             <button
               onClick={connectWallet}
               className="btn btn-primary"
@@ -193,9 +194,9 @@ export function BorrowerDashboard() {
         <div className="mb-12 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">Borrower Dashboard</h1>
-            <p className="text-muted">Manage your loan requests and repayments</p>
+            <p className="">Manage your loan requests and repayments</p>
             {account && (
-              <p className="text-sm text-muted mt-2">
+              <p className="text-sm  mt-2">
                 Connected: {account.substring(0, 6)}...{account.substring(38)}
               </p>
             )}
@@ -218,7 +219,7 @@ export function BorrowerDashboard() {
               <div key={index} className="card">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-muted text-sm mb-1">{stat.label}</p>
+                    <p className=" text-sm mb-1">{stat.label}</p>
                     <p className="text-3xl font-bold text-foreground">{stat.value}</p>
                   </div>
                   <Icon className={`${stat.color} w-6 h-6`} />
@@ -286,8 +287,8 @@ export function BorrowerDashboard() {
         {/* Empty State */}
         {loans.length === 0 && !loading && (
           <div className="card text-center py-12">
-            <p className="text-muted mb-4">You don't have any loans yet.</p>
-            <p className="text-sm text-muted">Request a loan to get started!</p>
+            <p className=" mb-4">You don't have any loans yet.</p>
+            <p className="text-sm ">Request a loan to get started!</p>
           </div>
         )}
 
@@ -295,7 +296,7 @@ export function BorrowerDashboard() {
         {loading && loans.length === 0 && (
           <div className="text-center py-12">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-muted">Loading your loans...</p>
+            <p className="">Loading your loans...</p>
           </div>
         )}
       </div>

@@ -31,22 +31,22 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-muted hover:text-foreground transition">
+          {/* <div className="hidden md:flex items-center gap-8">
+            <Link href="#features" className=" hover:text-foreground transition">
               Features
             </Link>
-            <Link href="#how-it-works" className="text-muted hover:text-foreground transition">
+            <Link href="#how-it-works" className=" hover:text-foreground transition">
               How It Works
             </Link>
-            <Link href="#stats" className="text-muted hover:text-foreground transition">
+            <Link href="#stats" className=" hover:text-foreground transition">
               Impact
             </Link>
-          </div>
+          </div> */}
 
           <div className="hidden md:flex items-center gap-4">
             <WalletConnectButton />
 
-            {isAuthenticated && user ? (
+            {/* {isAuthenticated && user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -84,7 +84,7 @@ export function Navigation() {
               </div>
             ) : (
               <>
-                <Link href="/auth/login" className="text-muted hover:text-foreground transition">
+                <Link href="/auth/login" className=" hover:text-foreground transition">
                   Sign In
                 </Link>
                 <Link href="/auth/signup" className="btn-primary">
@@ -99,7 +99,7 @@ export function Navigation() {
                   {user.role === "borrower" ? "Borrow" : "Invest"}
                 </Link>
               </>
-            )}
+            )} */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -111,19 +111,19 @@ export function Navigation() {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden pb-4 space-y-4">
-            <Link href="#features" className="block text-muted hover:text-foreground">
+            {/* <Link href="#features" className="block  hover:text-foreground">
               Features
             </Link>
-            <Link href="#how-it-works" className="block text-muted hover:text-foreground">
+            <Link href="#how-it-works" className="block  hover:text-foreground">
               How It Works
             </Link>
-            <Link href="#stats" className="block text-muted hover:text-foreground">
+            <Link href="#stats" className="block  hover:text-foreground">
               Impact
-            </Link>
+            </Link> */}
             <div className="flex gap-4 pt-4">
               <WalletConnectButton />
             </div>
-            {isAuthenticated && user ? (
+            {/* {isAuthenticated && user ? (
               <div className="pt-4 border-t border-muted space-y-2">
                 <Link href="/dashboard" className="block text-sm text-foreground hover:text-primary">
                   Dashboard
@@ -144,7 +144,7 @@ export function Navigation() {
                   Sign Up
                 </Link>
               </div>
-            )}
+            )} */}
           </div>
         )}
       </div>

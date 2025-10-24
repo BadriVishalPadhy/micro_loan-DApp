@@ -192,7 +192,7 @@ export function LenderDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-foreground mb-4">Lender Dashboard</h1>
-            <p className="text-muted mb-8">Connect your wallet to view investment opportunities</p>
+            <p className=" mb-8">Connect your wallet to view investment opportunities</p>
             <button
               onClick={connectWallet}
               className="btn btn-primary"
@@ -212,9 +212,9 @@ export function LenderDashboard() {
         <div className="mb-12 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">Lender Dashboard</h1>
-            <p className="text-muted">Discover investment opportunities and grow your portfolio</p>
+            <p className="">Discover investment opportunities and grow your portfolio</p>
             {account && (
-              <p className="text-sm text-muted mt-2">
+              <p className="text-sm  mt-2">
                 Connected: {account.substring(0, 6)}...{account.substring(38)}
               </p>
             )}
@@ -237,7 +237,7 @@ export function LenderDashboard() {
               <div key={index} className="card">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-muted text-sm mb-1">{stat.label}</p>
+                    <p className=" text-sm mb-1">{stat.label}</p>
                     <p className="text-3xl font-bold text-foreground">{stat.value}</p>
                   </div>
                   <Icon className={`${stat.color} w-6 h-6`} />
@@ -256,11 +256,11 @@ export function LenderDashboard() {
           {loadingLoans ? (
             <div className="text-center py-12">
               <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-              <p className="text-muted">Loading available loans...</p>
+              <p className="">Loading available loans...</p>
             </div>
           ) : availableLoans.length === 0 ? (
             <div className="card text-center py-12">
-              <p className="text-muted">No loans available for funding at the moment.</p>
+              <p className="">No loans available for funding at the moment.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -285,12 +285,12 @@ export function LenderDashboard() {
           {loadingLoans ? (
             <div className="text-center py-12">
               <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-              <p className="text-muted">Loading your investments...</p>
+              <p className="">Loading your investments...</p>
             </div>
           ) : myInvestments.length === 0 ? (
             <div className="card text-center py-12">
-              <p className="text-muted">You haven't made any investments yet.</p>
-              <p className="text-sm text-muted mt-2">Browse available loans above to get started!</p>
+              <p className="">You haven't made any investments yet.</p>
+              <p className="text-sm  mt-2">Browse available loans above to get started!</p>
             </div>
           ) : (
             <div className="space-y-4">

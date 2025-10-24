@@ -29,7 +29,7 @@ export function WalletConnectButton() {
           className="p-2 hover:bg-muted-light rounded-lg transition"
           aria-label="Disconnect wallet"
         >
-          <LogOut size={20} className="text-muted" />
+          <LogOut size={20} className="" />
         </button>
       </div>
     )
