@@ -86,7 +86,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
           <h2 className="text-2xl font-bold text-foreground">Request a Loan</h2>
           <button 
             onClick={onClose} 
-            className="text-muted hover:text-foreground transition"
+            className=" hover:text-foreground transition"
             disabled={isSubmitting}
           >
             <X size={24} />
@@ -103,7 +103,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Loan Amount (USDC)
-              <span className="text-muted text-xs ml-2">1 USDC = $1.00</span>
+              <span className=" text-xs ml-2">1 USDC = $1.00</span>
             </label>
             <div className="relative">
               <input
@@ -117,7 +117,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
                 disabled={isSubmitting}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <span className="text-muted">USDC</span>
+                <span className="">USDC</span>
               </div>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Interest Rate (%)
-              <span className="text-muted text-xs ml-2">APR</span>
+              <span className=" text-xs ml-2">APR</span>
             </label>
             <div className="relative">
               <input
@@ -141,10 +141,10 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
                 disabled={isSubmitting}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <span className="text-muted">%</span>
+                <span className="">%</span>
               </div>
             </div>
-            <p className="text-xs text-muted mt-1">
+            <p className="text-xs  mt-1">
               Total to repay: ${(parseFloat(formData.principal || '0') * (1 + parseFloat(formData.interestRate || '0') / 100)).toFixed(2)}
             </p>
           </div>
@@ -152,7 +152,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Due Date
-              <span className="text-muted text-xs ml-2">Loan term</span>
+              <span className=" text-xs ml-2">Loan term</span>
             </label>
             <input
               type="date"
@@ -164,7 +164,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
               required
               disabled={isSubmitting}
             />
-            <p className="text-xs text-muted mt-1">
+            <p className="text-xs  mt-1">
               Minimum loan term: 1 day, Maximum: 1 year
             </p>
           </div>
@@ -172,7 +172,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
               Purpose
-              <span className="text-muted text-xs ml-2">What will you use the funds for?</span>
+              <span className=" text-xs ml-2">What will you use the funds for?</span>
             </label>
             <textarea
               value={formData.purpose}
@@ -183,7 +183,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
               required
               disabled={isSubmitting}
             />
-            <p className="text-xs text-muted mt-1">
+            <p className="text-xs  mt-1">
               Be specific to attract lenders. 100-200 characters recommended.
             </p>
           </div>
@@ -192,11 +192,11 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
             <h4 className="font-medium text-sm mb-2">Loan Summary</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted">Amount</span>
+                <span className="">Amount</span>
                 <span>${parseFloat(formData.principal || '0').toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">Interest ({formData.interestRate || '0'}%)</span>
+                <span className="">Interest ({formData.interestRate || '0'}%)</span>
                 <span>${(parseFloat(formData.principal || '0') * parseFloat(formData.interestRate || '0') / 100).toFixed(2)}</span>
               </div>
               <div className="border-t border-border my-2"></div>
@@ -235,7 +235,7 @@ export function RequestLoanModal({ onClose }: RequestLoanModalProps) {
             </button>
           </div>
           
-          <p className="text-xs text-muted text-center">
+          <p className="text-xs  text-center">
             By submitting, you agree to our Terms of Service and Privacy Policy.
           </p>
         </form>

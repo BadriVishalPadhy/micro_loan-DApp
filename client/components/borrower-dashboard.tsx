@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { DollarSign, TrendingDown, Clock, CheckCircle, RefreshCw } from "lucide-react"
+import { DollarSign, TrendingDown, Clock, CheckCircle, RefreshCw, Plus } from "lucide-react"
 import { LoanCard } from "./loan-card"
 import { useBlockchain } from "@/contexts/BlockchainContext"
 import { withdrawLoan, repayLoan, formatLoanForUI } from "@/utils/blockchain"
@@ -11,6 +11,7 @@ import { RequestLoanModal } from "./request-loan-modal"
 export function BorrowerDashboard() {
   const { isConnected, account, connectWallet, loans, loading, refreshLoans } = useBlockchain()
   const [processing, setProcessing] = useState(false)
+  const [showRequestModal, setShowRequestModal] = useState(false)
 
   // Calculate statistics
   const stats = {
@@ -152,7 +153,7 @@ export function BorrowerDashboard() {
       label: "Pending Requests",
       value: stats.pendingRequests.toString(),
       icon: Clock,
-      color: "",
+      color: "text-blue-600",
     },
     {
       label: "Repaid Loans",
@@ -189,117 +190,141 @@ export function BorrowerDashboard() {
   }
 
   return (
-    <section className="py-12 md:py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Borrower Dashboard</h1>
-            <p className="">Manage your loan requests and repayments</p>
-            {account && (
-              <p className="text-sm  mt-2">
-                Connected: {account.substring(0, 6)}...{account.substring(38)}
-              </p>
-            )}
+    <>
+      <section className="py-12 md:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2">Borrower Dashboard</h1>
+              <p className="">Manage your loan requests and repayments</p>
+              {account && (
+                <p className="text-sm  mt-2">
+                  Connected: {account.substring(0, 6)}...{account.substring(38)}
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRequestModal(true)}
+                className="btn btn-primary flex items-center gap-2"
+                disabled={processing}
+              >
+                <Plus className="w-4 h-4" />
+                Request New Loan
+              </button>
+              <button
+                onClick={refreshLoans}
+                disabled={loading || processing}
+                className="btn btn-secondary flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
           </div>
-          <button
-            onClick={refreshLoans}
-            disabled={loading || processing}
-            className="btn btn-secondary flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-4 gap-6 mb-12">
-          {statsDisplay.map((stat, index) => {
-            const Icon = stat.icon
-            return (
-              <div key={index} className="card">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className=" text-sm mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+          {/* Stats Grid */}
+          <div className="grid md:grid-cols-4 gap-6 mb-12">
+            {statsDisplay.map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <div key={index} className="card">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className=" text-sm mb-1">{stat.label}</p>
+                      <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    </div>
+                    <Icon className={`${stat.color} w-6 h-6`} />
                   </div>
-                  <Icon className={`${stat.color} w-6 h-6`} />
                 </div>
+              )
+            })}
+          </div>
+
+          {/* Loans Requiring Action */}
+          {(fundedLoans.length > 0 || withdrawnLoans.length > 0) && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-foreground mb-6">
+                Action Required ({fundedLoans.length + withdrawnLoans.length})
+              </h2>
+              <div className="space-y-4">
+                {fundedLoans.map((loan) => (
+                  <LoanCard 
+                    key={loan.id} 
+                    loan={loan} 
+                    userType="borrower"
+                    onWithdraw={handleWithdraw}
+                  />
+                ))}
+                {withdrawnLoans.map((loan) => (
+                  <LoanCard 
+                    key={loan.id} 
+                    loan={loan} 
+                    userType="borrower"
+                    onRepay={handleRepay}
+                  />
+                ))}
               </div>
-            )
-          })}
+            </div>
+          )}
+
+          {/* Pending Requests */}
+          {requestedLoans.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-foreground mb-6">
+                Pending Requests ({requestedLoans.length})
+              </h2>
+              <div className="space-y-4">
+                {requestedLoans.map((loan) => (
+                  <LoanCard key={loan.id} loan={loan} userType="borrower" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Completed Loans */}
+          {completedLoans.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-foreground mb-6">
+                Completed Loans ({completedLoans.length})
+              </h2>
+              <div className="space-y-4">
+                {completedLoans.map((loan) => (
+                  <LoanCard key={loan.id} loan={loan} userType="borrower" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {loans.length === 0 && !loading && (
+            <div className="card text-center py-12">
+              <p className=" mb-4">You don't have any loans yet.</p>
+              <p className="text-sm  mb-6">Request a loan to get started!</p>
+              <button
+                onClick={() => setShowRequestModal(true)}
+                className="btn btn-primary inline-flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Request Your First Loan
+              </button>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && loans.length === 0 && (
+            <div className="text-center py-12">
+              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="">Loading your loans...</p>
+            </div>
+          )}
         </div>
+      </section>
 
-        {/* Loans Requiring Action */}
-        {(fundedLoans.length > 0 || withdrawnLoans.length > 0) && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
-              Action Required ({fundedLoans.length + withdrawnLoans.length})
-            </h2>
-            <div className="space-y-4">
-              {fundedLoans.map((loan) => (
-                <LoanCard 
-                  key={loan.id} 
-                  loan={loan} 
-                  userType="borrower"
-                  onWithdraw={handleWithdraw}
-                />
-              ))}
-              {withdrawnLoans.map((loan) => (
-                <LoanCard 
-                  key={loan.id} 
-                  loan={loan} 
-                  userType="borrower"
-                  onRepay={handleRepay}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Pending Requests */}
-        {requestedLoans.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
-              Pending Requests ({requestedLoans.length})
-            </h2>
-            <div className="space-y-4">
-              {requestedLoans.map((loan) => (
-                <LoanCard key={loan.id} loan={loan} userType="borrower" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Completed Loans */}
-        {completedLoans.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
-              Completed Loans ({completedLoans.length})
-            </h2>
-            <div className="space-y-4">
-              {completedLoans.map((loan) => (
-                <LoanCard key={loan.id} loan={loan} userType="borrower" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {loans.length === 0 && !loading && (
-          <div className="card text-center py-12">
-            <p className=" mb-4">You don't have any loans yet.</p>
-            <p className="text-sm ">Request a loan to get started!</p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && loans.length === 0 && (
-          <div className="text-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="">Loading your loans...</p>
-          </div>
-        )}
-      </div>
-    </section>
+      {/* Request Loan Modal */}
+      {showRequestModal && (
+        <RequestLoanModal onClose={() => setShowRequestModal(false)} />
+      )}
+    </>
   )
 }
